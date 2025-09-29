@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Constitución Quest - 5 Niveles</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        /* Pantalla de Bienvenida */
+        .welcome-screen {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 60px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .game-title {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .world-title {
+            font-size: 2em;
+            color: #FFD700;
+            margin: 20px 0;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            font-size: 1.8em;
+            border-radius: 50px;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.4);
+        }
+
+        .start-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(76, 175, 80, 0.6);
+        }
+
+        /* Mapa de Niveles */
+        .level-map {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .level-card {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid rgba(255,255,255,0.3);
+        }
+
+        .level-card:hover:not(.locked) {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            border-color: #FFD700;
+        }
+
+        .level-card.locked {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .level-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+        }
+
+        .level-name {
+            font-size: 1.5em;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .level-desc {
+            font-size: 1em;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .stars {
+            margin-top: 15px;
+            font-size: 1.5em;
+        }
+
+        /* HUD */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0,0,0,0.3);
+            padding: 20px 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            color: white;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .hud-item {
+            font-size: 1.3em;
+        }
+
+        .score {
+            color: #FFD700;
+            font-weight: bold;
+        }
+
+        /* NIVEL 1: Memory Cards */
+        .memory-game {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            max-width: 700px;
+            margin: 30px auto;
+        }
+
+        .memory-card {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.2);
+            border-radius: 15px;
+            cursor: pointer;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+
+        .memory-card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .memory-card.matched {
+            cursor: default;
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            padding: 10px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 3em;
+        }
+
+        .card-back {
+            background: white;
+            color: #333;
+            transform: rotateY(180deg);
+            text-align: center;
+        }
+
+        .memory-card.matched .card-back {
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+            animation: matchPulse 0.6s ease-out;
+            font-weight: bold;
+        }
+
+        .memory-card.matched.pair-1 .card-back { background: linear-gradient(135deg, #4CAF50, #45a049); }
+        .memory-card.matched.pair-2 .card-back { background: linear-gradient(135deg, #FFD700, #FFA500); }
+        .memory-card.matched.pair-3 .card-back { background: linear-gradient(135deg, #2196F3, #1976D2); }
+        .memory-card.matched.pair-4 .card-back { background: linear-gradient(135deg, #E91E63, #C2185B); }
+        .memory-card.matched.pair-5 .card-back { background: linear-gradient(135deg, #9C27B0, #7B1FA2); }
+        .memory-card.matched.pair-6 .card-back { background: linear-gradient(135deg, #FF5722, #E64A19); }
+
+        @keyframes matchPulse {
+            0% { transform: rotateY(180deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.1); }
+            100% { transform: rotateY(180deg) scale(1); }
+        }
+
+        /* NIVEL 2: True/False */
+        .true-false-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .statement-box {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0;
+        }
+
+        .statement-text {
+            font-size: 1.8em;
+            color: white;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .tf-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .tf-btn {
+            padding: 20px 50px;
+            font-size: 1.5em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .tf-btn.true { background: #4CAF50; color: white; }
+        .tf-btn.false { background: #f44336; color: white; }
+        .tf-btn:hover { transform: scale(1.05); }
+
+        /* NIVEL 3: Quiz Multiple Choice */
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .question-box {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin: 20px 0;
+        }
+
+        .question-text {
+            font-size: 1.6em;
+            color: white;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 15px;
+        }
+
+        .quiz-option {
+            background: rgba(255,255,255,0.2);
+            border: 3px solid rgba(255,255,255,0.3);
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2em;
+            color: white;
+            text-align: left;
+        }
+
+        .quiz-option:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateX(10px);
+        }
+
+        .quiz-option.correct {
+            background: #4CAF50;
+            border-color: #45a049;
+        }
+
+        .quiz-option.incorrect {
+            background: #f44336;
+            border-color: #da190b;
+        }
+
+        /* NIVEL 4: Ordenar Secuencia */
+        .sequence-game {
+            max-width: 800px;
+            margin: 30px auto;
+        }
+
+        .sequence-items {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sequence-item {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: move;
+            transition: all 0.3s;
+            color: #333;
+            font-size: 1.2em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .sequence-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .sequence-item.dragging {
+            opacity: 0.5;
+        }
+
+        .drag-handle {
+            font-size: 1.5em;
+            cursor: grab;
+        }
+
+        /* NIVEL 5: Conectar Puntos */
+        .connect-game {
+            max-width: 900px;
+            margin: 30px auto;
+        }
+
+        .connect-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .connect-column {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .connect-item {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: #333;
+            font-weight: 600;
+            border: 3px solid transparent;
+        }
+
+        .connect-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .connect-item.selected {
+            border-color: #2196F3;
+            background: #E3F2FD;
+        }
+
+        .connect-item.matched {
+            border-color: #4CAF50;
+            background: #C8E6C9;
+        }
+
+        /* Botones */
+        .btn {
+            background: linear-gradient(45deg, #2196F3, #21CBF3);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+        }
+
+        .btn-back {
+            background: linear-gradient(45deg, #f44336, #da190b);
+        }
+
+        /* Utilidades */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-white {
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @media (max-width: 768px) {
+            .game-title { font-size: 2em; }
+            .memory-game { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+            .connect-columns { grid-template-columns: 1fr; }
+            .hud { font-size: 0.9em; padding: 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Pantalla de Bienvenida -->
+        <div id="welcomeScreen" class="welcome-screen fade-in">
+            <div class="game-title">⚖️ CONSTITUCIÓN QUEST ⚖️</div>
+            <div class="world-title">5 NIVELES DE DESAFÍO</div>
+            <p class="text-white" style="font-size: 1.3em; margin: 20px 0;">
+                Domina los artículos fundamentales<br>
+                de la Constitución Española de 1978
+            </p>
+            <button class="start-btn" onclick="showLevelMap()">🎮 COMENZAR</button>
+        </div>
+
+        <!-- Mapa de Niveles -->
+        <div id="levelMap" class="hidden">
+            <h1 class="text-white" style="font-size: 2.5em; margin-bottom: 20px;">🗺️ SELECCIONA NIVEL</h1>
+            
+            <div class="hud">
+                <div class="hud-item">⭐ Estrellas: <span id="totalStars" class="score">0</span>/15</div>
+                <div class="hud-item">💎 Puntos: <span id="totalPoints" class="score">0</span></div>
+            </div>
+
+            <div class="level-map">
+                <div class="level-card" onclick="startLevel(1)">
+                    <div class="level-icon">🃏</div>
+                    <div class="level-name">Nivel 1: Memory</div>
+                    <div class="level-desc">Empareja artículos</div>
+                    <div class="stars" id="stars1">☆☆☆</div>
+                </div>
+
+                <div class="level-card locked" id="level2Card">
+                    <div class="level-icon">✓✗</div>
+                    <div class="level-name">Nivel 2: V/F</div>
+                    <div class="level-desc">Verdadero o Falso</div>
+                    <div class="stars" id="stars2">☆☆☆</div>
+                </div>
+
+                <div class="level-card locked" id="level3Card">
+                    <div class="level-icon">❓</div>
+                    <div class="level-name">Nivel 3: Quiz</div>
+                    <div class="level-desc">Preguntas múltiples</div>
+                    <div class="stars" id="stars3">☆☆☆</div>
+                </div>
+
+                <div class="level-card locked" id="level4Card">
+                    <div class="level-icon">🔢</div>
+                    <div class="level-name">Nivel 4: Ordenar</div>
+                    <div class="level-desc">Secuencia correcta</div>
+                    <div class="stars" id="stars4">☆☆☆</div>
+                </div>
+
+                <div class="level-card locked" id="level5Card">
+                    <div class="level-icon">🔗</div>
+                    <div class="level-name">Nivel 5: Conectar</div>
+                    <div class="level-desc">Une conceptos</div>
+                    <div class="stars" id="stars5">☆☆☆</div>
+                </div>
+            </div>
+
+            <button class="btn btn-back" onclick="location.reload()" style="margin-top: 30px;">🏠 Inicio</button>
+        </div>
+
+        <!-- NIVEL 1: Memory Cards -->
+        <div id="level1" class="hidden">
+            <div class="hud">
+                <div class="hud-item">🃏 Nivel 1</div>
+                <div class="hud-item">Movimientos: <span id="moves" class="score">0</span></div>
+                <div class="hud-item">Parejas: <span id="matches" class="score">0</span>/6</div>
+            </div>
+            <h2 class="text-white" style="font-size: 2em; margin-bottom: 20px;">🃏 MEMORY CARDS</h2>
+            <div class="memory-game" id="memoryGame"></div>
+            <button class="btn btn-back" onclick="backToMap()">← Volver</button>
+        </div>
+
+        <!-- NIVEL 2: True/False -->
+        <div id="level2" class="hidden">
+            <div class="hud">
+                <div class="hud-item">✓✗ Nivel 2</div>
+                <div class="hud-item">Pregunta: <span id="tfProgress" class="score">1</span>/10</div>
+                <div class="hud-item">Aciertos: <span id="tfScore" class="score">0</span></div>
+            </div>
+            <div class="true-false-container" id="tfContainer"></div>
+        </div>
+
+        <!-- NIVEL 3: Quiz -->
+        <div id="level3" class="hidden">
+            <div class="hud">
+                <div class="hud-item">❓ Nivel 3</div>
+                <div class="hud-item">Pregunta: <span id="quizProgress" class="score">1</span>/10</div>
+                <div class="hud-item">Aciertos: <span id="quizScore" class="score">0</span></div>
+            </div>
+            <div class="quiz-container" id="quizContainer"></div>
+        </div>
+
+        <!-- NIVEL 4: Ordenar -->
+        <div id="level4" class="hidden">
+            <div class="hud">
+                <div class="hud-item">🔢 Nivel 4</div>
+                <div class="hud-item">Ordena los artículos cronológicamente</div>
+            </div>
+            <h2 class="text-white" style="font-size: 2em; margin-bottom: 20px;">🔢 ORDENA LA SECUENCIA</h2>
+            <div class="sequence-game">
+                <div class="sequence-items" id="sequenceItems"></div>
+            </div>
+            <button class="btn btn-success" onclick="checkSequence()">✓ Comprobar</button>
+            <button class="btn btn-back" onclick="backToMap()">← Volver</button>
+        </div>
+
+        <!-- NIVEL 5: Conectar -->
+        <div id="level5" class="hidden">
+            <div class="hud">
+                <div class="hud-item">🔗 Nivel 5</div>
+                <div class="hud-item">Conectados: <span id="connectScore" class="score">0</span>/8</div>
+            </div>
+            <h2 class="text-white" style="font-size: 2em; margin-bottom: 20px;">🔗 CONECTA ARTÍCULOS CON CONTENIDOS</h2>
+            <div class="connect-game">
+                <div class="connect-columns">
+                    <div class="connect-column" id="leftColumn"></div>
+                    <div class="connect-column" id="rightColumn"></div>
+                </div>
+            </div>
+            <button class="btn btn-back" onclick="backToMap()">← Volver</button>
+        </div>
+
+        <!-- Pantalla de Victoria -->
+        <div id="victoryScreen" class="hidden welcome-screen fade-in">
+            <div style="font-size: 5em;">🎉</div>
+            <h1 class="game-title">¡NIVEL COMPLETADO!</h1>
+            <div id="victoryMessage" class="text-white" style="font-size: 1.8em; margin: 30px 0;"></div>
+            <div id="victoryStars" style="font-size: 4em; margin: 20px 0;"></div>
+            <button class="btn btn-success" onclick="backToMap()">🗺️ Siguiente Nivel</button>
+        </div>
+    </div>
+
+    <script>
+        // Estado del juego
+        const gameState = {
+            currentLevel: 0,
+            points: 0,
+            stars: [0, 0, 0, 0, 0],
+            unlockedLevels: [1]
+        };
+
+        // DATOS DEL JUEGO
+
+        // Nivel 1: Memory Cards
+        const memoryCards = [
+            {id: 1, text: "Art. 1.1"},
+            {id: 1, text: "Estado social y democrático de Derecho"},
+            {id: 2, text: "Art. 1.2"},
+            {id: 2, text: "Soberanía nacional reside en el pueblo"},
+            {id: 3, text: "Art. 2"},
+            {id: 3, text: "Unidad de España y autonomías"},
+            {id: 4, text: "Art. 3"},
+            {id: 4, text: "Castellano es la lengua oficial"},
+            {id: 5, text: "Art. 6"},
+            {id: 5, text: "Partidos políticos expresan pluralismo"},
+            {id: 6, text: "Art. 15"},
+            {id: 6, text: "Derecho a la vida"}
+        ];
+
+        // Nivel 2: True/False
+        const trueFalseQuestions = [
+            {statement: "La soberanía nacional reside en el pueblo español", answer: true},
+            {statement: "España es una república parlamentaria", answer: false},
+            {statement: "El castellano es la única lengua de España", answer: false},
+            {statement: "La Constitución se aprobó en 1978", answer: true},
+            {statement: "El Rey es el Jefe del Estado", answer: true},
+            {statement: "Los partidos políticos están regulados en el Art. 6", answer: true},
+            {statement: "El Art. 15 establece el derecho a la vivienda", answer: false},
+            {statement: "La forma política del Estado es la Monarquía Parlamentaria", answer: true},
+            {statement: "El Art. 14 establece el derecho a la vida", answer: false},
+            {statement: "El Art. 43 reconoce el derecho a la protección de la salud", answer: true}
+        ];
+
+        // Nivel 3: Quiz
+        const quizQuestions = [
+            {q: "¿Qué artículo establece que España es un Estado social y democrático de Derecho?", opts: ["Art. 1.1", "Art. 2", "Art. 3", "Art. 9"], correct: 0},
+            {q: "¿Dónde reside la soberanía nacional?", opts: ["En el Rey", "En el Gobierno", "En el pueblo español", "En las Cortes"], correct: 2},
+            {q: "¿Cuál es la forma política del Estado?", opts: ["República", "Monarquía Parlamentaria", "Monarquía Absoluta", "Estado Federal"], correct: 1},
+            {q: "¿Qué artículo regula la unidad de España?", opts: ["Art. 1", "Art. 2", "Art. 3", "Art. 4"], correct: 1},
+            {q: "¿Cuál es la lengua oficial del Estado?", opts: ["Español", "Castellano", "Todas las cooficiales", "Castellano y catalán"], correct: 1},
+            {q: "¿Qué artículo regula los partidos políticos?", opts: ["Art. 5", "Art. 6", "Art. 7", "Art. 8"], correct: 1},
+            {q: "¿Qué artículo establece el derecho a la vida?", opts: ["Art. 13", "Art. 14", "Art. 15", "Art. 16"], correct: 2},
+            {q: "¿Qué artículo reconoce la igualdad ante la ley?", opts: ["Art. 12", "Art. 13", "Art. 14", "Art. 15"], correct: 2},
+            {q: "¿Qué artículo regula el derecho a la protección de la salud?", opts: ["Art. 41", "Art. 42", "Art. 43", "Art. 44"], correct: 2},
+            {q: "¿Quién es el Jefe del Estado según la Constitución?", opts: ["Presidente del Gobierno", "Rey", "Presidente del Congreso", "Presidente del Senado"], correct: 1}
+        ];
+
+        // Nivel 4: Secuencia
+        const sequenceItems = [
+            {id: 1, text: "Art. 1 - Valores superiores", order: 1},
+            {id: 2, text: "Art. 2 - Unidad de España", order: 2},
+            {id: 3, text: "Art. 6 - Partidos políticos", order: 3},
+            {id: 4, text: "Art. 14 - Igualdad ante la ley", order: 4},
+            {id: 5, text: "Art. 43 - Protección de la salud", order: 5},
+            {id: 6, text: "Art. 56 - El Rey Jefe del Estado", order: 6}
+        ];
+
+        // Nivel 5: Conectar
+        const connectItems = {
+            left: [
+                {id: 'a1', text: 'Art. 1', match: 'c1'},
+                {id: 'a14', text: 'Art. 14', match: 'c14'},
+                {id: 'a15', text: 'Art. 15', match: 'c15'},
+                {id: 'a16', text: 'Art. 16', match: 'c16'},
+                {id: 'a20', text: 'Art. 20', match: 'c20'},
+                {id: 'a27', text: 'Art. 27', match: 'c27'},
+                {id: 'a43', text: 'Art. 43', match: 'c43'},
+                {id: 'a47', text: 'Art. 47', match: 'c47'}
+            ],
+            right: [
+                {id: 'c1', text: 'Estado social y democrático', match: 'a1'},
+                {id: 'c14', text: 'Igualdad ante la ley', match: 'a14'},
+                {id: 'c15', text: 'Derecho a la vida', match: 'a15'},
+                {id: 'c16', text: 'Libertad ideológica y religiosa', match: 'a16'},
+                {id: 'c20', text: 'Libertad de expresión', match: 'a20'},
+                {id: 'c27', text: 'Libertad de enseñanza', match: 'a27'},
+                {id: 'c43', text: 'Protección de la salud', match: 'a43'},
+                {id: 'c47', text: 'Derecho a vivienda digna', match: 'a47'}
+            ]
+        };
+
+        // FUNCIONES DE NAVEGACIÓN
+        function showLevelMap() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('levelMap').classList.remove('hidden');
+            updateHUD();
+        }
+
+        function backToMap() {
+            ['level1', 'level2', 'level3', 'level4', 'level5', 'victoryScreen'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById('levelMap').classList.remove('hidden');
+            updateHUD();
+        }
+
+        function updateHUD() {
+            document.getElementById('totalStars').textContent = gameState.stars.reduce((a, b) => a + b, 0);
+            document.getElementById('totalPoints').textContent = gameState.points;
+            
+            for (let i = 0; i < 5; i++) {
+                const starsEl = document.getElementById(`stars${i + 1}`);
+                if (starsEl) {
+                    starsEl.textContent = '★'.repeat(gameState.stars[i]) + '☆'.repeat(3 - gameState.stars[i]);
+                }
+            }
+            
+            for (let i = 2; i <= 5; i++) {
+                const card = document.getElementById(`level${i}Card`);
+                if (card && gameState.unlockedLevels.includes(i)) {
+                    card.classList.remove('locked');
+                    card.onclick = () => startLevel(i);
+                }
+            }
+        }
+
+        function startLevel(levelNum) {
+            if (!gameState.unlockedLevels.includes(levelNum)) return;
+            
+            gameState.currentLevel = levelNum;
+            document.getElementById('levelMap').classList.add('hidden');
+            document.getElementById(`level${levelNum}`).classList.remove('hidden');
+            
+            if (levelNum === 1) initMemoryGame();
+            if (levelNum === 2) initTrueFalse();
+            if (levelNum === 3) initQuiz();
+            if (levelNum === 4) initSequence();
+            if (levelNum === 5) initConnect();
+        }
+
+        // NIVEL 1: MEMORY CARDS
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+
+        function initMemoryGame() {
+            const gameEl = document.getElementById('memoryGame');
+            gameEl.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            moves = 0;
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('matches').textContent = '0';
+            
+            const shuffled = [...memoryCards].sort(() => Math.random() - 0.5);
+            
+            shuffled.forEach((card, index) => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'memory-card';
+                cardEl.dataset.id = card.id;
+                cardEl.dataset.index = index;
+                cardEl.innerHTML = `
+                    <div class="card-front">❓</div>
+                    <div class="card-back">${card.text}</div>
+                `;
+                cardEl.onclick = () => flipCard(cardEl, card.id);
+                gameEl.appendChild(cardEl);
+            });
+        }
+
+        function flipCard(cardEl, cardId) {
+            if (flippedCards.length >= 2 || cardEl.classList.contains('flipped') || cardEl.classList.contains('matched')) return;
+            
+            cardEl.classList.add('flipped');
+            flippedCards.push({el: cardEl, id: cardId});
+            
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moves').textContent = moves;
+                
+                setTimeout(() => {
+                    if (flippedCards[0].id === flippedCards[1].id) {
+                        flippedCards.forEach(card => {
+                            card.el.classList.add('matched');
+                            card.el.classList.add(`pair-${cardId}`);
+                        });
+                        matchedPairs++;
+                        document.getElementById('matches').textContent = matchedPairs;
+                        
+                        if (matchedPairs === 6) {
+                            setTimeout(() => completeLevel(1, moves), 500);
+                        }
+                    } else {
+                        flippedCards.forEach(card => card.el.classList.remove('flipped'));
+                    }
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+
+        // NIVEL 2: TRUE/FALSE
+        let currentTF = 0;
+        let tfScore = 0;
+
+        function initTrueFalse() {
+            currentTF = 0;
+            tfScore = 0;
+            document.getElementById('tfScore').textContent = '0';
+            document.getElementById('tfProgress').textContent = '1';
+            showTFQuestion();
+        }
+
+        function showTFQuestion() {
+            if (currentTF >= trueFalseQuestions.length) {
+                completeLevel(2, tfScore);
+                return;
+            }
+
+            const q = trueFalseQuestions[currentTF];
+            const container = document.getElementById('tfContainer');
+            
+            container.innerHTML = `
+                <div class="statement-box fade-in">
+                    <div class="statement-text">${q.statement}</div>
+                    <div class="tf-buttons">
+                        <button class="tf-btn true" onclick="answerTF(true, ${q.answer})">✓ VERDADERO</button>
+                        <button class="tf-btn false" onclick="answerTF(false, ${q.answer})">✗ FALSO</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function answerTF(selected, correct) {
+            if (selected === correct) {
+                tfScore++;
+                document.getElementById('tfScore').textContent = tfScore;
+            }
+            
+            setTimeout(() => {
+                currentTF++;
+                document.getElementById('tfProgress').textContent = currentTF + 1;
+                showTFQuestion();
+            }, 1000);
+        }
+
+        // NIVEL 3: QUIZ
+        let currentQuiz = 0;
+        let quizScore = 0;
+
+        function initQuiz() {
+            currentQuiz = 0;
+            quizScore = 0;
+            document.getElementById('quizScore').textContent = '0';
+            document.getElementById('quizProgress').textContent = '1';
+            showQuizQuestion();
+        }
+
+        function showQuizQuestion() {
+            if (currentQuiz >= quizQuestions.length) {
+                completeLevel(3, quizScore);
+                return;
+            }
+
+            const q = quizQuestions[currentQuiz];
+            const container = document.getElementById('quizContainer');
+            
+            container.innerHTML = `
+                <div class="question-box fade-in">
+                    <div class="question-text">${q.q}</div>
+                    <div class="quiz-options" id="quizOptions">
+                        ${q.opts.map((opt, i) => `
+                            <div class="quiz-option" onclick="answerQuiz(${i}, ${q.correct})" data-index="${i}">
+                                ${String.fromCharCode(65 + i)}) ${opt}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function answerQuiz(selected, correct) {
+            const options = document.querySelectorAll('.quiz-option');
+            options.forEach(opt => opt.onclick = null);
+            
+            if (selected === correct) {
+                options[selected].classList.add('correct');
+                quizScore++;
+                document.getElementById('quizScore').textContent = quizScore;
+            } else {
+                options[selected].classList.add('incorrect');
+                options[correct].classList.add('correct');
+            }
+            
+            setTimeout(() => {
+                currentQuiz++;
+                document.getElementById('quizProgress').textContent = currentQuiz + 1;
+                showQuizQuestion();
+            }, 2000);
+        }
+
+        // NIVEL 4: SECUENCIA
+        let draggedElement = null;
+        let currentOrder = [];
+
+        function initSequence() {
+            const container = document.getElementById('sequenceItems');
+            container.innerHTML = '';
+            
+            const shuffled = [...sequenceItems].sort(() => Math.random() - 0.5);
+            currentOrder = shuffled.map(item => item.id);
+            
+            shuffled.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'sequence-item';
+                itemEl.draggable = true;
+                itemEl.dataset.id = item.id;
+                itemEl.dataset.order = item.order;
+                itemEl.innerHTML = `
+                    <span class="drag-handle">☰</span>
+                    <span>${item.text}</span>
+                `;
+                
+                itemEl.addEventListener('dragstart', (e) => {
+                    draggedElement = itemEl;
+                    itemEl.classList.add('dragging');
+                });
+                
+                itemEl.addEventListener('dragend', () => {
+                    itemEl.classList.remove('dragging');
+                });
+                
+                itemEl.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(container, e.clientY);
+                    if (afterElement == null) {
+                        container.appendChild(draggedElement);
+                    } else {
+                        container.insertBefore(draggedElement, afterElement);
+                    }
+                });
+                
+                container.appendChild(itemEl);
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.sequence-item:not(.dragging)')];
+            
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function checkSequence() {
+            const items = document.querySelectorAll('.sequence-item');
+            let correct = 0;
+            
+            items.forEach((item, index) => {
+                const expectedOrder = parseInt(item.dataset.order);
+                if (expectedOrder === index + 1) {
+                    correct++;
+                    item.style.background = '#C8E6C9';
+                } else {
+                    item.style.background = '#FFCDD2';
+                }
+            });
+            
+            setTimeout(() => {
+                completeLevel(4, correct);
+            }, 1500);
+        }
+
+        // NIVEL 5: CONECTAR
+        let selectedLeft = null;
+        let selectedRight = null;
+        let connections = {};
+        let connectMatches = 0;
+
+        function initConnect() {
+            const leftCol = document.getElementById('leftColumn');
+            const rightCol = document.getElementById('rightColumn');
+            leftCol.innerHTML = '';
+            rightCol.innerHTML = '';
+            connections = {};
+            connectMatches = 0;
+            selectedLeft = null;
+            selectedRight = null;
+            document.getElementById('connectScore').textContent = '0';
+            
+            const shuffledLeft = [...connectItems.left].sort(() => Math.random() - 0.5);
+            const shuffledRight = [...connectItems.right].sort(() => Math.random() - 0.5);
+            
+            shuffledLeft.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'connect-item';
+                itemEl.textContent = item.text;
+                itemEl.dataset.id = item.id;
+                itemEl.dataset.match = item.match;
+                itemEl.onclick = () => selectConnect(itemEl, 'left');
+                leftCol.appendChild(itemEl);
+            });
+            
+            shuffledRight.forEach(item => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'connect-item';
+                itemEl.textContent = item.text;
+                itemEl.dataset.id = item.id;
+                itemEl.dataset.match = item.match;
+                itemEl.onclick = () => selectConnect(itemEl, 'right');
+                rightCol.appendChild(itemEl);
+            });
+        }
+
+        function selectConnect(element, side) {
+            if (!element || !element.classList || element.classList.contains('matched')) return;
+            
+            if (side === 'left') {
+                if (selectedLeft && selectedLeft.classList) {
+                    selectedLeft.classList.remove('selected');
+                }
+                selectedLeft = element;
+                if (element.classList) {
+                    element.classList.add('selected');
+                }
+            } else {
+                if (selectedRight && selectedRight.classList) {
+                    selectedRight.classList.remove('selected');
+                }
+                selectedRight = element;
+                if (element.classList) {
+                    element.classList.add('selected');
+                }
+            }
+            
+            if (selectedLeft && selectedRight) {
+                checkConnection();
+            }
+        }
+
+        function checkConnection() {
+            if (!selectedLeft || !selectedRight) return;
+            
+            const leftMatch = selectedLeft.dataset.match;
+            const rightId = selectedRight.dataset.id;
+            
+            if (leftMatch === rightId) {
+                if (selectedLeft.classList) {
+                    selectedLeft.classList.add('matched');
+                    selectedLeft.classList.remove('selected');
+                }
+                if (selectedRight.classList) {
+                    selectedRight.classList.add('matched');
+                    selectedRight.classList.remove('selected');
+                }
+                connectMatches++;
+                document.getElementById('connectScore').textContent = connectMatches;
+                
+                if (connectMatches === 8) {
+                    setTimeout(() => completeLevel(5, connectMatches), 500);
+                }
+            } else {
+                setTimeout(() => {
+                    if (selectedLeft && selectedLeft.classList) {
+                        selectedLeft.classList.remove('selected');
+                    }
+                    if (selectedRight && selectedRight.classList) {
+                        selectedRight.classList.remove('selected');
+                    }
+                }, 500);
+            }
+            
+            selectedLeft = null;
+            selectedRight = null;
+        }
+
+        // COMPLETAR NIVEL
+        function completeLevel(levelNum, performance) {
+            let stars = 0;
+            let message = '';
+            
+            if (levelNum === 1) {
+                if (performance <= 12) stars = 3;
+                else if (performance <= 18) stars = 2;
+                else stars = 1;
+                message = `Completaste el Memory en ${performance} movimientos`;
+            } else if (levelNum === 2) {
+                if (performance >= 9) stars = 3;
+                else if (performance >= 7) stars = 2;
+                else stars = 1;
+                message = `Acertaste ${performance}/10 afirmaciones`;
+            } else if (levelNum === 3) {
+                if (performance >= 9) stars = 3;
+                else if (performance >= 7) stars = 2;
+                else stars = 1;
+                message = `Respondiste ${performance}/10 preguntas correctas`;
+            } else if (levelNum === 4) {
+                if (performance === 6) stars = 3;
+                else if (performance >= 4) stars = 2;
+                else stars = 1;
+                message = `Ordenaste ${performance}/6 artículos correctamente`;
+            } else if (levelNum === 5) {
+                if (performance === 8) stars = 3;
+                else if (performance >= 6) stars = 2;
+                else stars = 1;
+                message = `Conectaste ${performance}/8 conceptos correctamente`;
+            }
+            
+            gameState.stars[levelNum - 1] = Math.max(gameState.stars[levelNum - 1], stars);
+            gameState.points += stars * 100;
+            
+            if (levelNum < 5 && !gameState.unlockedLevels.includes(levelNum + 1)) {
+                gameState.unlockedLevels.push(levelNum + 1);
+            }
+            
+            showVictory(message, stars);
+        }
+
+        function showVictory(message, stars) {
+            document.getElementById(`level${gameState.currentLevel}`).classList.add('hidden');
+            document.getElementById('victoryScreen').classList.remove('hidden');
+            document.getElementById('victoryMessage').textContent = message;
+            document.getElementById('victoryStars').textContent = '★'.repeat(stars) + '☆'.repeat(3 - stars);
+            
+            updateHUD();
+        }
+
+        // GUARDAR PROGRESO
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('constitucionQuest5');
+            if (saved) {
+                const savedState = JSON.parse(saved);
+                Object.assign(gameState, savedState);
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('constitucionQuest5', JSON.stringify(gameState));
+        });
+    </script>
+</body>
+</html>
