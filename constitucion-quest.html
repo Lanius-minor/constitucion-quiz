@@ -143,6 +143,164 @@
             font-weight: bold;
         }
 
+        /* RANKING STYLES */
+        .ranking-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .ranking-title {
+            font-size: 2em;
+            color: #FFD700;
+            margin-bottom: 20px;
+        }
+
+        .ranking-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ranking-item {
+            background: rgba(255,255,255,0.2);
+            padding: 20px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .ranking-item:hover {
+            transform: translateX(10px);
+            background: rgba(255,255,255,0.3);
+        }
+
+        .ranking-item.current-user {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            border: 3px solid white;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .ranking-position {
+            font-size: 2em;
+            font-weight: bold;
+            color: white;
+            width: 60px;
+        }
+
+        .ranking-position.gold { color: #FFD700; }
+        .ranking-position.silver { color: #C0C0C0; }
+        .ranking-position.bronze { color: #CD7F32; }
+
+        .ranking-info {
+            flex: 1;
+            text-align: left;
+            color: white;
+        }
+
+        .ranking-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .ranking-date {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .ranking-stats {
+            text-align: right;
+            color: white;
+        }
+
+        .ranking-stars {
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        .ranking-points {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #FFD700;
+        }
+
+        .name-input-section {
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 30px;
+        }
+
+        .name-input {
+            width: 100%;
+            max-width: 400px;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 3px solid #FFD700;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .save-name-btn {
+            background: linear-gradient(45deg, #FFD700, #FFA500);
+            color: #333;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3em;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+
+        .save-name-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.5);
+        }
+
+        .skip-btn {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 10px;
+        }
+
+        .skip-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .user-rank-display {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-top: 20px;
+            border: 3px solid #FFD700;
+        }
+
+        .user-rank-display h3 {
+            font-size: 2.5em;
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+
+        .user-rank-display p {
+            font-size: 1.3em;
+            color: white;
+        }
+
         /* NIVEL 1: Memory Cards */
         .memory-game {
             display: grid;
@@ -458,6 +616,14 @@
                 de la Constitución Española de 1978
             </p>
             <button class="start-btn" onclick="showLevelMap()">🎮 COMENZAR</button>
+            <button class="btn" onclick="showRanking()" style="margin-top: 20px;">🏆 VER RANKING</button>
+        </div>
+
+        <!-- Pantalla de Ranking -->
+        <div id="rankingScreen" class="hidden welcome-screen fade-in">
+            <div class="game-title">🏆 RANKING</div>
+            <div class="ranking-section" id="rankingList"></div>
+            <button class="btn btn-back" onclick="backToWelcome()">← Volver</button>
         </div>
 
         <!-- Mapa de Niveles -->
@@ -579,6 +745,45 @@
             <div id="victoryStars" style="font-size: 4em; margin: 20px 0;"></div>
             <button class="btn btn-success" onclick="backToMap()">🗺️ Siguiente Nivel</button>
         </div>
+
+        <!-- Pantalla de Juego Completado con Input de Nombre -->
+        <div id="gameCompleteScreen" class="hidden welcome-screen fade-in">
+            <div style="font-size: 5em;">🏆</div>
+            <h1 class="game-title">¡JUEGO COMPLETADO!</h1>
+            <div class="text-white" style="font-size: 1.8em; margin: 20px 0;">
+                Has conseguido <span class="score" id="finalStars">0</span> estrellas<br>
+                y <span class="score" id="finalPoints">0</span> puntos
+            </div>
+            
+            <div class="name-input-section">
+                <h2 class="text-white" style="font-size: 1.5em; margin-bottom: 15px;">
+                    ¿Quieres guardar tu puntuación en el ranking?
+                </h2>
+                <input 
+                    type="text" 
+                    id="playerNameInput" 
+                    class="name-input" 
+                    placeholder="Escribe tu nombre (opcional)"
+                    maxlength="20"
+                >
+                <div>
+                    <button class="save-name-btn" onclick="saveToRanking()">💾 Guardar en Ranking</button>
+                    <button class="skip-btn" onclick="saveAnonymous()">Continuar sin nombre</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pantalla de Ranking Final -->
+        <div id="finalRankingScreen" class="hidden welcome-screen fade-in">
+            <div style="font-size: 5em;">🏆</div>
+            <h1 class="game-title">RANKING ACTUALIZADO</h1>
+            
+            <div id="userRankDisplay" class="user-rank-display"></div>
+            
+            <div class="ranking-section" id="finalRankingList"></div>
+            
+            <button class="btn btn-success" onclick="location.reload()">🎮 Jugar de Nuevo</button>
+        </div>
     </div>
 
     <script>
@@ -670,6 +875,149 @@
             ]
         };
 
+        // SISTEMA DE RANKING
+        function getRankings() {
+            const rankings = localStorage.getItem('constitucionQuestRankings');
+            return rankings ? JSON.parse(rankings) : [];
+        }
+
+        function saveRankings(rankings) {
+            localStorage.setItem('constitucionQuestRankings', JSON.stringify(rankings));
+        }
+
+        function addToRanking(name, stars, points) {
+            const rankings = getRankings();
+            const newEntry = {
+                name: name || 'Anónimo',
+                stars: stars,
+                points: points,
+                date: new Date().toISOString()
+            };
+            
+            rankings.push(newEntry);
+            rankings.sort((a, b) => {
+                if (b.stars !== a.stars) return b.stars - a.stars;
+                return b.points - a.points;
+            });
+            
+            const topRankings = rankings.slice(0, 10);
+            saveRankings(topRankings);
+            
+            const userRank = rankings.findIndex(r => 
+                r.name === newEntry.name && 
+                r.stars === newEntry.stars && 
+                r.points === newEntry.points &&
+                r.date === newEntry.date
+            ) + 1;
+            
+            return { rank: userRank, total: rankings.length };
+        }
+
+        function displayRankings(containerId, currentUserEntry = null) {
+            const rankings = getRankings();
+            const container = document.getElementById(containerId);
+            
+            if (rankings.length === 0) {
+                container.innerHTML = '<p class="text-white" style="font-size: 1.5em;">Aún no hay puntuaciones registradas. ¡Sé el primero!</p>';
+                return;
+            }
+            
+            let html = '<div class="ranking-list">';
+            rankings.forEach((entry, index) => {
+                const isCurrentUser = currentUserEntry && 
+                    entry.name === currentUserEntry.name && 
+                    entry.stars === currentUserEntry.stars && 
+                    entry.points === currentUserEntry.points &&
+                    entry.date === currentUserEntry.date;
+                
+                const positionClass = index === 0 ? 'gold' : index === 1 ? 'silver' : index === 2 ? 'bronze' : '';
+                const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+                
+                html += `
+                    <div class="ranking-item ${isCurrentUser ? 'current-user' : ''}">
+                        <div class="ranking-position ${positionClass}">
+                            ${medal || (index + 1)}
+                        </div>
+                        <div class="ranking-info">
+                            <div class="ranking-name">${entry.name}</div>
+                            <div class="ranking-date">${new Date(entry.date).toLocaleDateString('es-ES', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            })}</div>
+                        </div>
+                        <div class="ranking-stats">
+                            <div class="ranking-stars">⭐ ${entry.stars}/15</div>
+                            <div class="ranking-points">${entry.points} pts</div>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        function showRanking() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('rankingScreen').classList.remove('hidden');
+            displayRankings('rankingList');
+        }
+
+        function backToWelcome() {
+            document.getElementById('rankingScreen').classList.add('hidden');
+            document.getElementById('welcomeScreen').classList.remove('hidden');
+        }
+
+        function saveToRanking() {
+            const playerName = document.getElementById('playerNameInput').value.trim();
+            if (!playerName) {
+                alert('Por favor, escribe tu nombre o haz clic en "Continuar sin nombre"');
+                return;
+            }
+            
+            const totalStars = gameState.stars.reduce((a, b) => a + b, 0);
+            const rankInfo = addToRanking(playerName, totalStars, gameState.points);
+            
+            showFinalRanking(playerName, rankInfo.rank, totalStars, gameState.points);
+        }
+
+        function saveAnonymous() {
+            const totalStars = gameState.stars.reduce((a, b) => a + b, 0);
+            const rankInfo = addToRanking('', totalStars, gameState.points);
+            
+            showFinalRanking('Anónimo', rankInfo.rank, totalStars, gameState.points);
+        }
+
+        function showFinalRanking(name, rank, stars, points) {
+            document.getElementById('gameCompleteScreen').classList.add('hidden');
+            document.getElementById('finalRankingScreen').classList.remove('hidden');
+            
+            const currentUserEntry = {
+                name: name,
+                stars: stars,
+                points: points,
+                date: new Date().toISOString()
+            };
+            
+            const rankDisplay = document.getElementById('userRankDisplay');
+            const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏅';
+            const rankMessage = rank <= 3 ? '¡Increíble! Estás en el podio!' : '¡Buen trabajo!';
+            
+            rankDisplay.innerHTML = `
+                <h3>${rankEmoji} ¡Has quedado en el puesto #${rank}! ${rankEmoji}</h3>
+                <p>${rankMessage}</p>
+                <p style="margin-top: 15px;">
+                    <span style="font-size: 1.5em;">⭐ ${stars} estrellas</span> | 
+                    <span style="font-size: 1.5em;">💎 ${points} puntos</span>
+                </p>
+            `;
+            
+            displayRankings('finalRankingList', currentUserEntry);
+        }
+
         // FUNCIONES DE NAVEGACIÓN
         function showLevelMap() {
             document.getElementById('welcomeScreen').classList.add('hidden');
@@ -686,7 +1034,8 @@
         }
 
         function updateHUD() {
-            document.getElementById('totalStars').textContent = gameState.stars.reduce((a, b) => a + b, 0);
+            const totalStars = gameState.stars.reduce((a, b) => a + b, 0);
+            document.getElementById('totalStars').textContent = totalStars;
             document.getElementById('totalPoints').textContent = gameState.points;
             
             for (let i = 0; i < 5; i++) {
@@ -881,16 +1230,14 @@
 
         // NIVEL 4: SECUENCIA
         let draggedElement = null;
-        let currentOrder = [];
 
         function initSequence() {
             const container = document.getElementById('sequenceItems');
             container.innerHTML = '';
             
             const shuffled = [...sequenceItems].sort(() => Math.random() - 0.5);
-            currentOrder = shuffled.map(item => item.id);
             
-            shuffled.forEach((item, index) => {
+            shuffled.forEach((item) => {
                 const itemEl = document.createElement('div');
                 itemEl.className = 'sequence-item';
                 itemEl.draggable = true;
@@ -901,7 +1248,7 @@
                     <span>${item.text}</span>
                 `;
                 
-                itemEl.addEventListener('dragstart', (e) => {
+                itemEl.addEventListener('dragstart', () => {
                     draggedElement = itemEl;
                     itemEl.classList.add('dragging');
                 });
@@ -961,7 +1308,6 @@
         // NIVEL 5: CONECTAR
         let selectedLeft = null;
         let selectedRight = null;
-        let connections = {};
         let connectMatches = 0;
 
         function initConnect() {
@@ -969,7 +1315,6 @@
             const rightCol = document.getElementById('rightColumn');
             leftCol.innerHTML = '';
             rightCol.innerHTML = '';
-            connections = {};
             connectMatches = 0;
             selectedLeft = null;
             selectedRight = null;
@@ -1100,7 +1445,11 @@
                 gameState.unlockedLevels.push(levelNum + 1);
             }
             
-            showVictory(message, stars);
+            if (levelNum === 5 && gameState.unlockedLevels.length === 5) {
+                showGameComplete();
+            } else {
+                showVictory(message, stars);
+            }
         }
 
         function showVictory(message, stars) {
@@ -1110,6 +1459,15 @@
             document.getElementById('victoryStars').textContent = '★'.repeat(stars) + '☆'.repeat(3 - stars);
             
             updateHUD();
+        }
+
+        function showGameComplete() {
+            document.getElementById('level5').classList.add('hidden');
+            document.getElementById('gameCompleteScreen').classList.remove('hidden');
+            
+            const totalStars = gameState.stars.reduce((a, b) => a + b, 0);
+            document.getElementById('finalStars').textContent = totalStars;
+            document.getElementById('finalPoints').textContent = gameState.points;
         }
 
         // GUARDAR PROGRESO
